@@ -7,5 +7,6 @@ matplotlib
 seaborn
 graphviz
 openpyxl
+pyarrow
 jupyter
 ipykernel
