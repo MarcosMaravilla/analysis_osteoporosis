@@ -1,0 +1,14 @@
+# Bases de datos y datos sensibles
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Entornos virtuales y configuraciones
+.env
+.venv/
+venv/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.DS_Store
