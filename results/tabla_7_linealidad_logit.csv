@@ -1,0 +1,3 @@
+Variable,Término,Valor p,Interpretación
+edad,edad_log,0.9569,Sin evidencia de no linealidad
+imc,imc_log,0.8938,Sin evidencia de no linealidad

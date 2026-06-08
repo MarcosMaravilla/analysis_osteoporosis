@@ -1,0 +1,7 @@
+Variable,VIF
+edad,1.25
+imc,1.10
+sexo,1.08
+trabaja,1.23
+enfermedad,1.10
+realiza_af,1.06

@@ -1,0 +1,6 @@
+Métrica,Valor
+AUC aparente,0.892
+IC 95% bootstrap del AUC aparente,0.850 - 0.928
+Optimismo promedio,0.013
+AUC corregida por optimismo,0.879
+Remuestreos exitosos,200 / 200

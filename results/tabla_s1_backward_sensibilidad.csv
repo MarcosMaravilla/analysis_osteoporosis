@@ -1,0 +1,5 @@
+Iteración,Variables,Variable con mayor p,p máximo,Acción
+1,"edad, imc, sexo, trabaja, enfermedad, realiza_af",realiza_af,0.7944,Eliminar
+2,"edad, imc, sexo, trabaja, enfermedad",trabaja,0.5339,Eliminar
+3,"edad, imc, sexo, enfermedad",enfermedad,0.1528,Eliminar
+4,"edad, imc, sexo",sexo,0.0024,Detener
