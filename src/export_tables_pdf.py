@@ -1,9 +1,17 @@
-import os
 from pathlib import Path
 from textwrap import wrap
 
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
+from config import (
+    BOOTSTRAP_ITERATIONS as ENV_BOOTSTRAP_ITERATIONS,
+    CLEAN_PARQUET_PATH,
+    CLEAN_PICKLE_PATH,
+    RANDOM_SEED as ENV_RANDOM_SEED,
+    RESULTS_DIR as ENV_RESULTS_DIR,
+)
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,20 +22,18 @@ from sklearn.metrics import auc, brier_score_loss, roc_curve
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
-PROJECT_DIR = Path("/home/marcos-maravilla/análisis_estadístico_osteoporosis")
-PROCESSED_DIR = PROJECT_DIR / "data" / "processed"
-RESULTS_DIR = PROJECT_DIR / "results"
+RESULTS_DIR = ENV_RESULTS_DIR
 OUTPUT_PDF = RESULTS_DIR / "tablas_resultados_apa.pdf"
 ROC_PDF = RESULTS_DIR / "curva_roc.pdf"
 CALIBRATION_PDF = RESULTS_DIR / "calibracion_modelo.pdf"
 SUMMARY_MD = RESULTS_DIR / "informe_resultados.md"
-BOOTSTRAP_ITERATIONS = 200
-RANDOM_SEED = 20260608
+BOOTSTRAP_ITERATIONS = ENV_BOOTSTRAP_ITERATIONS
+RANDOM_SEED = ENV_RANDOM_SEED
 
 
 def load_clean_data():
-    parquet_path = PROCESSED_DIR / "BD_Clean_Osteoporosis.parquet"
-    pickle_path = PROCESSED_DIR / "BD_Clean_Osteoporosis.pkl"
+    parquet_path = CLEAN_PARQUET_PATH
+    pickle_path = CLEAN_PICKLE_PATH
 
     try:
         return pd.read_parquet(parquet_path)
@@ -94,7 +100,7 @@ def build_continuous_descriptive_table(df):
                 "Variable": variable_labels[variable],
                 "n": len(values),
                 "Mediana (Q1, Q3)": f"{median:.2f} ({q1:.2f}, {q3:.2f})",
-                "RIC": f"{q1:.2f} - {q3:.2f}",
+                "(Q1, Q3)": f"{q1:.2f} - {q3:.2f}",  # Corrección A
                 "Mínimo - Máximo": f"{values.min():.2f} - {values.max():.2f}",
                 "Valores nulos": int(df[variable].isna().sum()),
             }
@@ -333,6 +339,13 @@ def prepare_grouped_categorical_table(df):
             if variable_rows.empty:
                 continue
 
+            # Corrección B: preserva los estadísticos antes de reordenar categorías.
+            statistic_rows = variable_rows.loc[
+                variable_rows["p-value"].ne("") | variable_rows["V de Cramer"].ne("")
+            ]
+            p_value = statistic_rows["p-value"].iloc[0] if not statistic_rows.empty else ""
+            cramers_v = statistic_rows["V de Cramer"].iloc[0] if not statistic_rows.empty else ""
+
             order = CATEGORY_ORDERS.get(variable)
             if order is not None:
                 order_map = {value: idx for idx, value in enumerate(order)}
@@ -348,8 +361,8 @@ def prepare_grouped_categorical_table(df):
                         "Total (n, %)": row["Total (n, %)"],
                         "Con alteración ósea (n, %)": row["Con alteración ósea (n, %)"],
                         "Sin alteración ósea (n, %)": row["Sin alteración ósea (n, %)"],
-                        "p-value": row["p-value"] if row_idx == 0 else "",
-                        "V de Cramer": row["V de Cramer"] if row_idx == 0 else "",
+                        "p-value": p_value if row_idx == 0 else "",
+                        "V de Cramer": cramers_v if row_idx == 0 else "",
                         "_section": False,
                     }
                 )
@@ -877,7 +890,8 @@ def export_pdf():
             continuous_table,
             2,
             "Descripción global de variables continuas",
-            "Las variables se resumen con mediana y rango intercuartílico por la evidencia de no normalidad.",
+            # Corrección A: la columna muestra Q1 y Q3, no el ancho Q3-Q1.
+            "Las variables se resumen con mediana y percentiles 25 y 75 por la evidencia de no normalidad.",
             column_widths=[0.20, 0.08, 0.22, 0.18, 0.22, 0.10],
             wrap_widths={"Variable": 22, "Mediana (Q1, Q3)": 20, "Mínimo - Máximo": 18},
         )
@@ -922,7 +936,8 @@ def export_pdf():
             model_outputs["regression_table"],
             5,
             "Modelo de regresión logística multivariada preespecificado para alteración ósea",
-            "B = coeficiente logit; OR = odds ratio; IC = intervalo de confianza. Categorías de referencia: sexo Hombre, trabaja No, actividad física No y enfermedad Sano.",
+            # Corrección C: conserva la nota existente y añade criterio de inclusión de covariables.
+            "B = coeficiente logit; OR = odds ratio; IC = intervalo de confianza. Categorías de referencia: sexo Hombre, trabaja No, actividad física No y enfermedad Sano. La inclusión de las covariables se basó en plausibilidad clínica y epidemiológica preespecificada; la ausencia de significancia estadística individual no implica su exclusión del modelo.",
             column_widths=[0.25, 0.13, 0.13, 0.10, 0.10, 0.14, 0.15],
             wrap_widths={"Variable": 30},
         )
@@ -958,7 +973,8 @@ def export_pdf():
             calibration_table,
             9,
             "Calibración por deciles de probabilidad predicha",
-            "Cada decil compara la probabilidad predicha media con la proporción observada de alteración ósea.",
+            # Corrección D: conserva la nota existente y añade interpretación de deciles 2 y 3.
+            "Cada decil compara la probabilidad predicha media con la proporción observada de alteración ósea. Se observa un leve descalce en los deciles 2 y 3, sin comprometer la validez global del modelo.",
             column_widths=[0.12, 0.12, 0.34, 0.34],
             wrap_widths={"Probabilidad predicha media": 24, "Proporción observada": 24},
         )

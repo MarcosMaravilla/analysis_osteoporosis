@@ -1,4 +1,4 @@
-Variable,n,"Mediana (Q1, Q3)",RIC,Mínimo - Máximo,Valores nulos
+Variable,n,"Mediana (Q1, Q3)","(Q1, Q3)",Mínimo - Máximo,Valores nulos
 Edad (años),405,"65.00 (59.00, 72.00)",59.00 - 72.00,50.00 - 90.00,0
 Peso (kg),405,"69.00 (62.00, 77.00)",62.00 - 77.00,38.00 - 112.00,0
 Altura (cm),405,"155.00 (151.00, 162.00)",151.00 - 162.00,134.00 - 188.00,0
