@@ -2,14 +2,16 @@ from pathlib import Path
 
 import pandas as pd
 
+from config import CLEAN_CSV_PATH, RAW_CSV_PATH
+
 
 class DataCleaner:
     """Carga, limpia y exporta un CSV para el flujo inicial del proyecto."""
 
     def __init__(
         self,
-        input_path: str = "data/raw/datos_osteoporosis.csv",
-        output_path: str = "data/processed/datos_osteoporosis_limpios.csv",
+        input_path: str | Path = RAW_CSV_PATH,
+        output_path: str | Path = CLEAN_CSV_PATH,
     ) -> None:
         self.input_path = Path(input_path)
         self.output_path = Path(output_path)

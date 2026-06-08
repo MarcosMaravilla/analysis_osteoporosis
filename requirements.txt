@@ -10,3 +10,4 @@ openpyxl
 pyarrow
 jupyter
 ipykernel
+python-dotenv

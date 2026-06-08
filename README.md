@@ -1,31 +1,41 @@
-# Análisis Estadístico
-Descripción, objetivos y metodología del proyecto.
+# Analisis estadistico de osteoporosis
 
-## Configuración del entorno
+Proyecto reproducible para limpieza de datos, analisis estadistico, tablas, figuras e informe del analisis de osteoporosis.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+## Configuracion del entorno
+
+En Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+python -m ipykernel install --user --name osteoporosis-analysis --display-name "Python (osteoporosis-analysis)"
 ```
 
-## Ejecución del script de limpieza
+El proyecto usa `.env` para rutas locales y parametros reproducibles. El archivo `.env` no se versiona; `.env.example` queda como plantilla.
 
-Coloca el archivo de entrada en `data/raw/datos_osteoporosis.csv` y ejecuta:
-
-```bash
-python src/01_limpieza_datos.py
+```powershell
+Copy-Item .env.example .env
 ```
 
-El archivo limpio se exportará a `data/processed/datos_osteoporosis_limpios.csv`.
+## Limpieza de datos
 
-## Regeneración de tablas, figuras e informe
+Coloca el archivo de entrada en `data/raw/datos_osteoporosis.csv` o ajusta `RAW_CSV_PATH` en `.env`.
 
-El flujo estadístico reproducible del manuscrito se concentra en:
-
-```bash
-.venv/bin/python src/export_tables_pdf.py
+```powershell
+.\.venv\Scripts\python.exe src/01_limpieza_datos.py
 ```
 
-Este comando regenera las tablas en `results/tablas_resultados_apa.pdf`, la curva ROC, la curva de calibración, las tablas CSV y el informe multivariado en Markdown.
+El archivo limpio se exportara por defecto a `data/processed/datos_osteoporosis_limpios.csv`.
+
+## Regeneracion de tablas, figuras e informe
+
+El flujo estadistico reproducible del manuscrito se concentra en:
+
+```powershell
+.\.venv\Scripts\python.exe src/export_tables_pdf.py
+```
+
+Este comando regenera las tablas en `results/tablas_resultados_apa.pdf`, la curva ROC, la curva de calibracion, las tablas CSV y el informe multivariado en Markdown.
