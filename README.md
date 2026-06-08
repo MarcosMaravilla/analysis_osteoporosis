@@ -19,3 +19,13 @@ python src/01_limpieza_datos.py
 ```
 
 El archivo limpio se exportará a `data/processed/datos_osteoporosis_limpios.csv`.
+
+## Regeneración de tablas, figuras e informe
+
+El flujo estadístico reproducible del manuscrito se concentra en:
+
+```bash
+.venv/bin/python src/export_tables_pdf.py
+```
+
+Este comando regenera las tablas en `results/tablas_resultados_apa.pdf`, la curva ROC, la curva de calibración, las tablas CSV y el informe multivariado en Markdown.
