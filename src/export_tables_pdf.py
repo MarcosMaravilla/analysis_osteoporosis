@@ -283,8 +283,9 @@ def build_categorical_bivariate_table(df, variables, outcome="alteracion_osea"):
 
         counts = counts[[0, 1]].sort_index()
         row_percent = counts.div(counts.sum(axis=1), axis=0).mul(100)
-        chi2_statistic, chi2_p, _, expected = chi2_contingency(counts)
+        chi2_statistic, chi2_p, degrees_freedom, expected = chi2_contingency(counts)  # Corrección χ²
         p_value = fisher_exact(counts.to_numpy())[1] if (expected < 5).any() and counts.shape == (2, 2) else chi2_p
+        selected_test = "fisher_exact" if (expected < 5).any() and counts.shape == (2, 2) else "chi2_contingency"  # Corrección χ²
         min_dimension = min(counts.shape) - 1
         cramers_v = np.sqrt(chi2_statistic / (counts.to_numpy().sum() * min_dimension)) if min_dimension > 0 else np.nan
 
@@ -302,6 +303,8 @@ def build_categorical_bivariate_table(df, variables, outcome="alteracion_osea"):
                     "Sin alteración ósea (n, %)": f"{normal_n} ({row_percent.loc[category, 0]:.1f})",
                     "p-value": format_p_value(p_value) if idx == 0 else "",
                     "V de Cramer": f"{cramers_v:.3f}" if idx == 0 and not pd.isna(cramers_v) else "",
+                    "chi2": f"{chi2_statistic:.2f}" if idx == 0 and selected_test == "chi2_contingency" else ("Fisher" if idx == 0 else ""),  # Corrección χ²
+                    "gl": str(degrees_freedom) if idx == 0 and selected_test == "chi2_contingency" else ("—" if idx == 0 else ""),  # Corrección χ²
                 }
             )
 
@@ -330,6 +333,8 @@ def prepare_grouped_categorical_table(df):
                         "Sin alteración ósea (n, %)": "",
                         "p-value": "",
                         "V de Cramer": "",
+                        "chi2": "",  # Corrección χ²
+                        "gl": "",  # Corrección χ²
                         "_section": True,
                     }
                 )
@@ -345,6 +350,8 @@ def prepare_grouped_categorical_table(df):
             ]
             p_value = statistic_rows["p-value"].iloc[0] if not statistic_rows.empty else ""
             cramers_v = statistic_rows["V de Cramer"].iloc[0] if not statistic_rows.empty else ""
+            chi2_statistic = statistic_rows["chi2"].iloc[0] if not statistic_rows.empty else ""  # Corrección χ²
+            degrees_freedom = statistic_rows["gl"].iloc[0] if not statistic_rows.empty else ""  # Corrección χ²
 
             order = CATEGORY_ORDERS.get(variable)
             if order is not None:
@@ -363,6 +370,8 @@ def prepare_grouped_categorical_table(df):
                         "Sin alteración ósea (n, %)": row["Sin alteración ósea (n, %)"],
                         "p-value": p_value if row_idx == 0 else "",
                         "V de Cramer": cramers_v if row_idx == 0 else "",
+                        "chi2": chi2_statistic if row_idx == 0 else "",  # Corrección χ²
+                        "gl": degrees_freedom if row_idx == 0 else "",  # Corrección χ²
                         "_section": False,
                     }
                 )
@@ -909,7 +918,7 @@ def export_pdf():
             },
         )
 
-        for page_table, page_number in paginate_rows(categorical_table, rows_per_page=19):
+        for page_table, page_number in paginate_rows(categorical_table, rows_per_page=19):  # Corrección χ²
             draw_table_page(
                 pdf,
                 page_table,
@@ -917,7 +926,7 @@ def export_pdf():
                 "Características categóricas de los pacientes evaluados según alteración ósea (n = 405)",
                 "Los porcentajes de las columnas con y sin alteración ósea corresponden a porcentajes por fila. Los valores p provienen de Chi-cuadrada o prueba exacta de Fisher cuando corresponde. La V de Cramer cuantifica tamaño de efecto.",
                 page_suffix=f"continuación {page_number}" if page_number > 1 else None,
-                column_widths=[0.15, 0.20, 0.12, 0.19, 0.19, 0.07, 0.08],
+                column_widths=[0.13, 0.18, 0.11, 0.16, 0.16, 0.07, 0.07, 0.06, 0.06],  # Corrección χ²
                 wrap_widths={"Variable": 36, "Categoría": 30},
                 header_wrap_widths={
                     "Variable": 18,
@@ -927,6 +936,8 @@ def export_pdf():
                     "Sin alteración ósea (n, %)": 22,
                     "p-value": 8,
                     "V de Cramer": 12,
+                    "chi2": 6,  # Corrección χ²
+                    "gl": 4,  # Corrección χ²
                 },
                 section_column="_section",
             )
